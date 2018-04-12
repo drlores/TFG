@@ -1,0 +1,18 @@
+
+\chapter{Preámbulo}
+\label{chap:preamble}
+
+\minitoc
+\vspace{0.1cm}
+La sangre humana está considerada uno de los recursos más escasos, y a la vez necesários, de nuestro tiempo debido a que, a pesar de que la existencia de un aumento de donantes de sangre, la sangre recogida aún no es suficiente como para cubrir toda la demanda que se requiere. \breakline 
+Tanto hospitales como centros de investigación necesitan sangre ya sea para hacer transfusiones a pacientes durante o después de haber sido operados como para avanzar en la investigación del funcionamiento del cuerpo humano y, en concreto, del aparato circulatorio de éste. \breakline
+A pesar de lo comentado anteriormente, se supone que la sangre que se dona debería cubrir una mayor parte de la demanda de sangre que hay hoy en día, la razón por la cual ésta suposición no és cierta es que la sangre tiene ``fecha de caducidad''. La sangre que se extrae sana de un donante es capaz de llegar a conservarse en estado sano, antes de que se ponga enferma, hasta un máximo de quince días, según la información que nos facilitó la empresa farmacéutica \textsl{GRIFOLS}. \breakline
+
+
+\section{Introducción}
+\label{sec:intro}
+En este informe se hace un estudio en el cual se discuten diferentes consideraciones y aspectos acerca de la dinámica de coagulación de la sangre en estado de reposo. Para ello, se ha diseñado un método de recogida de datos basado en un ensayo clínico experimental, éste método se detalla de manera más precisa en el \autoref{chap:design}. \breakline
+
+
+\section{Objetivos}
+\label{sec:obj}

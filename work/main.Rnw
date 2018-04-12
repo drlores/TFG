@@ -1,0 +1,55 @@
+\documentclass[a4paper,11pt,twoside]{report}
+
+% include configuration
+\usepackage[utf8]{inputenc}
+
+<<config, child='0-configuration/configuration.Rnw'>>=
+@
+
+
+% include LaTeX macros
+<<macrosLatex, child='0-configuration/macrosLaTeX.Rnw'>>=
+@
+
+\begin{document}
+
+<<configR, child='0-configuration/configurationR.Rnw'>>=
+@
+
+
+<<macrosR, child='0-configuration/macrosR.Rnw'>>=
+@
+
+
+% include titlepage
+<<titlepage, child='1-opening/titlepage.Rnw'>>=
+@
+
+% Build a per-chapter table of content
+\dominitoc
+
+\clearpage
+
+
+% Build the general table of contents
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+% Build the list of figures
+\listoffigures
+
+% Build the list of tables
+\listoftables
+
+<<preamble, child='2-chapters/2-1-preamble.Rnw'>>=
+@
+
+<<design, child='2-chapters/2-2-design.Rnw'>>=
+@
+
+
+\bibliography{bib.bib}
+
+
+
+\end{document}

@@ -1,0 +1,11 @@
+
+% R packages
+<<echo = FALSE, warnings = FALSE, messages = FALSE  >>=
+suppressMessages(library(pixmap))
+suppressMessages(library(xtable))
+suppressMessages(library(grid))
+suppressMessages(library(gridExtra))
+suppressMessages(library(mclust))
+suppressMessages(library(png))
+@
+
