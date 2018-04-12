@@ -1,0 +1,200 @@
+\documentclass[a4paper,11pt,twoside]{report}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+% include configuration
+\usepackage[utf8]{inputenc}
+
+
+
+% Encoding and internationalization
+\usepackage[T1]{fontenc}
+\usepackage{aecompl}
+\usepackage[spanish]{babel}
+
+% Math packages
+\usepackage{amsmath,amssymb}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+\usepackage{a4wide}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{bbm}
+\renewcommand{\baselinestretch}{1.05}
+
+% Graphics and hyperlinks
+\usepackage[breaklinks=true]{hyperref}
+\usepackage[font=normalsize]{subfig}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,calc}
+\usepackage{graphicx}
+
+
+
+
+% pagestyle & margins
+\usepackage{titlesec}
+\usepackage{caption} 
+\usepackage[spanish]{minitoc}
+\usepackage[left=2.5cm,top=3cm,bottom=3cm,right=2.5cm]{geometry}
+\setlength\parindent{0pt}
+
+\titleformat{\chapter}
+{\normalfont\Huge\bfseries}{\thechapter}{1ex}{}
+\titleformat{\section}
+{\normalfont\huge\bfseries}{\thesection}{1ex}{}
+\titleformat{\subsection}
+{\normalfont\LARGE\bfseries}{\thesubsection}{1ex}{}
+
+% headers & footers
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\markright}
+\fancyhead[RE,LO]{title}
+\fancyfoot[CE,CO]{\leftmark}
+\fancyfoot[LE,RO]{\thepage}
+
+
+
+
+% include LaTeX macros
+
+
+\newcommand{\breakline}{\par\vspace{0.2cm}}
+
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+
+% R packages
+
+
+
+
+
+
+% working directories
+
+
+
+
+
+
+
+
+
+% include titlepage
+
+
+\begin{titlepage}
+
+\begin{tikzpicture}[remember picture, overlay]
+  \draw[line width = 1pt] ($(current page.north west) + (1in,-1in)$) rectangle ($(current page.south east) + (-1in,1in)$);
+\end{tikzpicture}
+
+\begin{minipage}{0.48\textwidth}\raggedright
+\includegraphics[width=\textwidth]{images/UAB.png}
+\end{minipage}
+\end{titlepage}
+
+% Build a per-chapter table of content
+\dominitoc
+
+\clearpage
+
+
+% Build the general table of contents
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+% Build the list of figures
+\listoffigures
+
+% Build the list of tables
+\listoftables
+
+
+
+\chapter{Preámbulo}
+\label{chap:preamble}
+
+\minitoc
+\vspace{0.1cm}
+La sangre humana está considerada uno de los recursos más escasos, y a la vez necesários, de nuestro tiempo debido a que, a pesar de que la existencia de un aumento de donantes de sangre, la sangre recogida aún no es suficiente como para cubrir toda la demanda que se requiere. \breakline 
+Tanto hospitales como centros de investigación necesitan sangre ya sea para hacer transfusiones a pacientes durante o después de haber sido operados como para avanzar en la investigación del funcionamiento del cuerpo humano y, en concreto, del aparato circulatorio de éste. \breakline
+A pesar de lo comentado anteriormente, se supone que la sangre que se dona debería cubrir una mayor parte de la demanda de sangre que hay hoy en día, la razón por la cual ésta suposición no és cierta es que la sangre tiene ``fecha de caducidad''. La sangre que se extrae sana de un donante es capaz de llegar a conservarse en estado sano, antes de que se ponga enferma, hasta un máximo de quince días, según la información que nos facilitó la empresa farmacéutica \textsl{GRIFOLS}. \breakline
+
+
+\section{Introducción}
+\label{sec:intro}
+En este informe se hace un estudio en el cual se discuten diferentes consideraciones y aspectos acerca de la dinámica de coagulación de la sangre en estado de reposo. Para ello, se ha diseñado un método de recogida de datos basado en un ensayo clínico experimental, éste método se detalla de manera más precisa en el \autoref{chap:design}. \breakline
+Para 
+
+\section{Objectivos}
+\label{sec:obj}
+
+
+
+\chapter{Diseño del experimento}
+\label{chap:design}
+
+\minitoc
+
+
+\bibliography{bib.bib}
+
+
+
+\end{document}
