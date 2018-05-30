@@ -21,8 +21,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows,calc}
 \usepackage{graphicx}
-
-
+\usepackage{float}
 
 
 % pagestyle & margins
@@ -31,6 +30,7 @@
 \usepackage[spanish]{minitoc}
 \usepackage[left=2.5cm,top=3cm,bottom=3cm,right=2.5cm]{geometry}
 \setlength\parindent{0pt}
+
 
 \titleformat{\chapter}
 {\normalfont\Huge\bfseries}{\thechapter}{1ex}{}
@@ -45,7 +45,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[LE,RO]{\markright}
-\fancyhead[RE,LO]{title}
+\fancyhead[RE,LO]{Modelización de la dinámica de coagulación sanguínea}
 \fancyfoot[CE,CO]{\leftmark}
 \fancyfoot[LE,RO]{\thepage}
 

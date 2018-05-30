@@ -1,0 +1,363 @@
+
+\chapter{Modelización del caso teórico}
+\label{chap:modtheo}
+
+\minitoc
+
+En este apartado se discuten aspectos en relación a la dinámica de coagulación sanguínea (capacidad que tienen los glóbulos rojos que circulan por nuestras vías sanguíneas, llamados discocitos, para adherirse unos a otros formando aglomeraciones de discocitos llamadas rollos, rouleax en francés, a medida que avanza el tiempo en que permanecen en reposo). \breakline
+
+Una de las teorías existentes acerca de la dinámica de coagulación sanguínea es que en nuestra sangre, formada esencialmente por el plasma y los glóbulos rojos, también existen unas sustancias químicas llamadas polímeros. Cuando nuestra sangre circula por el cuerpo, tanto discocitos como polímeros viajan a través de nuestras venas sin coagularse, sin embargo cuando la sangre abandona el sistema circulatorio, los discocitos comienzan a adherirse unos a otros, formando rouleax. Los polímeros actúan de conectores entre discocitos en este proceso. \breakline
+
+Entonces, dada una concentración de polímeros en la sangre, los discocitos se adhieren unos a otros para minimizar la entropía (grado de desorden molecular de un sistema), hecho que se puede interpretar como un problema de maximización del área, un porcentaje de la concentración de polímeros efectua la función de conector entre discocitos mientras que el porcentaje restante deambula por el plasma, entonces se cree que en función del tiempo se van formando los rouleax para maximizar el área sobrante por dónde los polímeros restantes puedan deambular, buscando un estado de equilibrio. \breakline
+
+Los datos que vamos a modelizar a continuación son datos simulados mediante un modelo paramétrico creado por un físico que sigue el esquema anterior, de manera que tenemos diferentes muestras donde, para diferentes concentraciones de polímeros, en las columnas tenemos el numero de rouleaux formados por $X$ discocitos, donde $X = 1, 2, \dots, k$, y en las filas el indicador de tiempo en el que se recoge la muestra. \breakline
+
+\section{Exploración inicial}
+\label{sec:expini}
+
+Vamos a comenzar por comentar la tendencia temporal de cada una de las bases de datos, en el siguiente gráfico se aprecia la media de los datos para todos los tiempos: \newpage
+
+<< echo=FALSE, fig.align='center', fig.pos="htbp", fig.asp=0.8, fig.cap="Representación gráfica de la tendéncia temporal ($\\mu$) para cada concetración.">>=
+datas <- paste(getwd(),"../../data", sep="/")
+
+datas <- list.files(datas, full.names = TRUE)
+
+auxdatas <- lapply(datas, function(x) read.table(x, header = FALSE))
+
+nr <-vapply(auxdatas, nrow, FUN.VALUE = numeric(1)); nc <- vapply(auxdatas, ncol, FUN.VALUE = numeric(1))
+
+auxdatas <- mapply(function(x,y,z) x[2:y, 2:z], auxdatas, nr, nc, SIMPLIFY = FALSE)
+
+mostres <- lapply(auxdatas, function(data){
+  apply(data, 1 , function(x){
+    do.call(c,lapply(seq_along(x), function(y) rep(y, x[y])))
+  })
+})
+
+params <- lapply(mostres, function(x){
+  sapply(x, function(y) c(mean(y), var(y), var(y)/mean(y)))
+})
+
+params <- lapply(params, function(x){ rownames(x) <- c("mu", "sigma2", "d"); t(x)})
+
+maxtime <- nr[which.max(nr)]
+maxparams <- t(sapply(params, function(x) apply(x, 2, max)))
+minparams <- t(sapply(params, function(x) apply(x, 2, min)))
+
+
+# colors <- rainbow(length(params))
+# plot(params[[1]][,"mu"], type = "l", col=colors[1], ylim=c(min(minparams[,"mu"]),max(maxparams[,"mu"])), 
+#           xlim=c(0, maxtime+10), xlab="temps", ylab = "mu", main=paste("Variació del paràmetre", "mu", "al llarg del temps"))
+
+# for(i in seq_along(params)){
+#     if( i == 1 ) {
+#       plot(params[[i]][,"mu"], type = "l", col=colors[i], ylim=c(min(minparams[,"mu"]),max(maxparams[,"mu"])), 
+#            xlim=c(0, maxtime+10), xlab="temps", ylab = j, main=paste("Variació del paràmetre", "mu", "al llarg del temps"))
+#     } else { 
+#       lines(params[[i]][,"mu"], col=colors[i]) 
+#     }
+# }
+# legend("topright", paste0("C", 1:5, sep=""), col=colors, lty=rep(1,length(colors)), bty="n")
+
+
+colors <- rainbow(length(params))
+for(i in seq_along(params)){
+  if( i == 1 ) {
+    plot(params[[i]][,"mu"], type = "l", col=colors[i], ylim=c(min(minparams[,"mu"]),max(maxparams[,"mu"])),
+          xlim=c(0, maxtime+10), xlab="tiempo", ylab = "media", main=NULL)
+  } else {
+    lines(params[[i]][,"mu"], col=colors[i])
+  }
+}
+legend("topright", paste0("C", 1:5, sep=""), col=colors, lty=rep(1,length(colors)), bty="n")
+@
+
+Se observa que la media a tiempo inicial es similar, lo que es lógico dado que los discocitos no han tenido tiempo para empezar a juntarse y la mayoría de aglomeraciones que encontramos son generalmente de uno y dos discocitos. \breakline
+
+Sin embargo observamos que con el paso del tiempo la media crece conforme crece la concentración de polímeros, también es visual que la variabilidad de la media aumenta con el paso del tiempo y conforme aumenta la concentración de polímeros. \breakline
+
+En resumen conforme mayor es la concentración de polímeros más tarda en estabilizarse la media y el valor al que converge es mayor. Cuanto mayor es la concentración de polímeros mayores són los rouleaux que se forman, esto explica porque la media converge a un valor mayor, sin embargo observamos que cuanto mayor es la concentración de polímeros más tarda en converger la media. Este hecho debe ser fruto de una varianza mayor, con el paso del tiempo, para altas concentraciones. \breakline
+
+A continuación hemos representado la varianza a lo largo del tiempo para las distintas concentraciones dada la suposición anterior:\newpage
+
+<<echo=FALSE, fig.align='center', fig.pos="htbp", fig.asp=0.8, fig.cap="Representación gráfica de la varianza temporal ($\\sigma^2$) para cada concetración.">>=
+ colors <- rainbow(length(params))
+  for(i in seq_along(params)){
+    if( i == 1 ) {
+      plot(params[[i]][,"sigma2"], type = "l", col=colors[i], ylim=c(min(minparams[,"sigma2"]),max(maxparams[,"sigma2"])),
+           xlim=c(0, maxtime+10), xlab="tiempo", ylab = "varianza", main=NULL)
+    } else {
+      lines(params[[i]][,"sigma2"], col=colors[i])
+    }
+  }
+  legend("topright", paste0("C", 1:5, sep=""), col=colors, lty=rep(1,length(colors)),bty="n")
+@
+
+Se observa que, de la misma manera que con la media, en el tiempo inicial la varianza es prácticamente nula. esto se debe a que prácticamente todas las aglomeraciones estan formadas por uno o dos discocitos. \breakline
+
+Como se habia supuesto anteriormente, observamos un aumento de la varianza conforme aumenta el tiempo y la concentración de polímeros, lo que explica que la media tarde más en converger para altas concentraciones de polímeros. Lo mismo le sucede a la variabilidad de la varianza, de manera incluso más clara que con la media, aumenta su variabilidad conforme aumenta el tiempo y la concentración de polímeros. \breakline
+
+Seguidamente hemos realizado el mismo gráfico que los dos anteriores para representar el índice de dispersión $\delta = \frac{\sigma ^2}{\mu}$, la razón por la que realizamos este gráfico es porque, dado que nuestros datos son datos discretos de conteo, el hecho de ajustar por una u otra distribución discreta puede depender de cómo están dispersos los datos, de manera que nos será útil para decidir qué distribución ajustará mejor a priori. \newpage
+
+<<echo=FALSE, fig.align='center', fig.pos="htbp", fig.asp=0.8, fig.cap="Representación gráfica del índice de dispersión temporal ($d$) para cada concetración.">>=
+ colors <- rainbow(length(params))
+  for(i in seq_along(params)){
+    if( i == 1 ) {
+      plot(params[[i]][,"d"], type = "l", col=colors[i], ylim=c(min(minparams[,"d"]),max(maxparams[,"d"])),
+           xlim=c(0, maxtime+10), xlab="tiempo", ylab = "índice de dispersión", main=NULL)
+    } else {
+      lines(params[[i]][,"d"], col=colors[i])
+    }
+  }
+  abline(h=1, col="coral3", lty=2)
+  legend("topright", paste0("C", 1:5, sep=""), col=colors, lty=rep(1,length(colors)), bty="n")
+@
+
+Las conclusiones que obtenemos de este gráfico són similares a las de los gráficos anteriores, la dispersión crece conforme crece el tiempo y aumenta la concentración de polímeros, así como la variabilidad del parámetro. \breakline
+
+Lo que si que podemos decir es que con el paso del tiempo, las muestras con altas concentraciones de polímeros se vuelven sobredispersas, lo que nos indica que una buena posible distribución para esos datos seria la geométrica. Por el contrario para pequeñas concentraciones de polímeros las muestras se mantienen infradispersas a lo largo del tiempo. \breakline
+
+También observamos que las muestras en la tercera concentración de polímeros aparentan tender a la equidispersión conforme aumenta el tiempo. \breakline
+
+\section{Exploración basada en los datos}
+\label{sec:expdata}
+
+A continuación vamos a realizar una pequeña exploración para determinar que distribuciones ajustan mejor los datos. \breakline
+
+Para ello vamos a seleccionar 4 tiempos entre 0 y 100 (dado que solo tenemos observaciones de todas las concentraciones de polímeros hasta aproximadamente el tiempo 100). \breakline
+
+Dada la apariencia de los gráficos anteriores, coger tiempos equidistantes podría no acabar de ser representativo de lo que sucede en las muestras a lo largo del tiempo, ya que perderíamos la información de los tiempos iniciales dónde suceden los cambios más bruscos, y la información de los finales sería redundante.\breakline
+
+Dicho esto los tiempos seleccionados para analizar son:\breakline
+
+\begin{itemize}
+
+\item tiempo semiinicial $t_0=5$.
+\item tiempo temprano $t_1=20$.
+\item tiempo intermedio $t_2=45$.
+\item tiempo tardío $t_3=80$.
+
+\end{itemize} \breakline
+
+Entonces veamos el histograma de cada concentración de polímeros para $t=t_0=5$:
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.58, fig.cap="Histograma para el tiempo semiinicial ($t=5$).">>=
+t <- c(5,20,45,80)
+sample_to_analize <- lapply(mostres, function(x) lapply(t, function(y) x[[y]]))
+names(sample_to_analize) <- paste0("C", 1:5)
+for(i in seq_along(sample_to_analize)) names(sample_to_analize[[i]]) <- paste0("t", 0:3)
+
+cells <- sapply(sample_to_analize,function(x) sapply(x, sum))[1,]
+
+  colors <- rainbow(5)
+  maxx <- max(sapply(sample_to_analize, function(x) max(x[[1]])))
+  for(j in 1:5){
+    mostra <- sample_to_analize[[j]][[1]]
+    un <- unique(mostra)
+    sums <- vapply(un, function(x) sum(mostra == x), FUN.VALUE = numeric(1))
+    dens <- sums/sum(sums)
+    if(j ==1){
+      plot(dens~un, type="b", pch=j, ylab="Densidad", xlab="n cel", main=NULL, col=colors[j], xlim=c(1,maxx), ylim=c(0,1))
+    } else {
+      lines(dens, type="b", col=colors[j], pch=j)
+    }
+  }
+  legend("topright", paste0("C", 1:5, sep=""), col=colors ,lty=rep(1,length(colors)), pch = 1:5, bty="n")
+@
+
+Observamos que en el tiempo semiinicial para las concentraciones de polímeros $C_1, \dots, C_4$ el patrón es similar, aunque, a pesar de que todos coinciden en que el punto de mayor masa de probabilidad es el de célula suelta, conforme se aumenta la concentración de polímeros, este punto de masa de probabilidad disminuye, y crece la probabilidad de los conglomerados de 2 y 3 celulas respectivamente, es decir que conforme aumenta la concentración de polímeros, aumenta el numero de rouleaux con más discocitos a tiempo semiinicial. \breakline
+
+Sin embargo para la concentración de polímeros $C_5$ ya se han formado rouleaux de hasta 8 discocitos en este tiempo, esto puede deberse no solo a la alta concentración de polímeros, sino también a la cantidad de células disponibles de las que dispone esta última muestra, ya que mientras las otras disponen de 512 células, esta última dispone de 1000 células, con lo que es más sencillo el proceso de conexión entre ellas. \breakline
+
+A continuación veámoslo para $t=t_1=20$. 
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.58, fig.cap="Histograma para el tiempo temprano ($t=20$).">>=
+maxx <- max(sapply(sample_to_analize, function(x) max(x[[2]])))
+   for(j in 1:5){
+    mostra <- sample_to_analize[[j]][[2]]
+    un <- unique(mostra)
+    sums <- vapply(un, function(x) sum(mostra == x), FUN.VALUE = numeric(1))
+    dens <- sums/sum(sums)
+    if(j ==1){
+      plot(dens~un, type="b", pch=j, ylab="Densidad", xlab="n cel", main=NULL, col=colors[j], xlim=c(1,maxx), ylim=c(0,1))
+    } else {
+      lines(dens, type="b", col=colors[j], pch=j)
+    }
+  }
+  legend("topright", paste0("C", 1:5, sep=""), col=colors ,lty=rep(1,length(colors)), pch = 1:5, bty="n")
+@
+
+El siguiente corresponde a $t=t_2=45$. 
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.58, fig.cap="Histograma para el tiempo intermedio ($t=45$).">>=
+maxx <- max(sapply(sample_to_analize, function(x) max(x[[3]])))
+  for(j in 1:5){
+    mostra <- sample_to_analize[[j]][[3]]
+    un <- unique(mostra) 
+    sums <- vapply(un, function(x) sum(mostra == x), FUN.VALUE = numeric(1))
+    dens <- sums/sum(sums)
+    if(j ==1){
+      plot(dens~un, type="b", pch=j, ylab="Densidad", xlab="n cel", main=NULL, col=colors[j], xlim=c(1,maxx), ylim=c(0,1))
+    } else {
+      lines(dens, type="b", col=colors[j], pch=j)
+    }
+  }
+  legend("topright", paste0("C", 1:5, sep=""), col=colors ,lty=rep(1,length(colors)), pch = 1:5, bty="n")
+@
+\newpage
+Finalmente representamos el último histograma para $t=t_3=80$. 
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.58, fig.cap="Histograma para el tiempo tardío ($t=80$).">>=
+maxx <- max(sapply(sample_to_analize, function(x) max(x[[4]])))
+  for(j in 1:5){
+    mostra <- sample_to_analize[[j]][[4]]
+    un <- unique(mostra)
+    sums <- vapply(un, function(x) sum(mostra == x), FUN.VALUE = numeric(1))
+    dens <- sums/sum(sums)
+    if(j ==1){
+      plot(dens~un, type="b", pch=j, ylab="Densidad", xlab="n cel", main=NULL, col=colors[j], xlim=c(1,maxx), ylim=c(0,1))
+    } else {
+      lines(dens, type="b", col=colors[j], pch=j)
+    }
+  }
+  legend("topright", paste0("C", 1:5, sep=""), col=colors ,lty=rep(1,length(colors)), pch = 1:5, bty="n")
+@
+
+Como resumen final de los gráficos anteriores podemos decir que conforme aumenta el tiempo aumenta la probabilidad de que se junten más células en un mismo rouleaux, al igual que, lógicamente, cuando aumenta el numero de rouleaux con más de una célula y se forman rouleaux mayores, disminuye el numero de células aisladas. \breakline
+
+También es remarcable que conforme aumenta la concentración de polímeros los conglomerados de discocitos se forman más rápido y contienen más células conectadas.
+
+\section{Modelización}
+\label{sec:modelization}
+
+Dicho esto, vamos a ver que distribuciones podrían modelar estos datos. \breakline
+
+Cuando hablamos de datos discretos de conteo, la primera distribución en la que pensamos es la de Poisson. Sin embargo existen otras distribuciones que podrían modelar los datos de manera mas precisa, por ejemplo la geométrica también denominada binomial negativa. \breakline
+
+A pesar de esto, la Poisson no modelará correctamente los datos dado que su domínio empieza en $0$ mientras que nuestra variable tiene un domínio que empieza en $1$. Por eso hemos ajustado una \textsl{Poisson truncada al cero} cuya densidad és la siguiente:
+
+$$ f(x | x > 0) = \frac{f(x)}{1-F(0)} = \frac{\lambda^x}{(e^{-\lambda}-1)x!} \ \ \ \ \ \ \forall \ \ x > 1$$
+
+Por otro lado la geométrica se puede definir sin problema en valores mayores que 0 dado que és una distribución que no tiene memoria: 
+
+$$ f(x | x > 0) = (1-p)^{x-1}p \ \ \ \ \ \ \forall \ \ x > 1 $$
+
+Dicho esto vamos a visualizar el ajuste de la Poisson y la geométrica en el histograma de los datos observados para cada concentración y tiempo. \breakline
+
+Veamos el ajuste de manera visual para la concentración $C_1$:
+
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.5>>=
+dgeom2 <- function(x, p) p*(1-p)^(x-1)
+dpoisg1 <- function(x, lambda) (lambda^x)/((exp(lambda)-1)*factorial(x))
+
+gethistadj <- function(mostra, main){
+  
+  un <- unique(mostra)
+  sums <- vapply(un, function(x) sum(mostra == x), FUN.VALUE = numeric(1))
+  dens <- sums/sum(sums)
+  
+  ## Poisson
+  lambda=mean(mostra-1)
+  poisdens <- dpoisg1(un, lambda = lambda)
+  
+  ## Geomètrica
+  p <- length(mostra)/(sum(mostra))
+  geomdens <- dgeom2(un, p)
+  
+  ##plot
+  plot(dens~un, type="b", pch=1, main=main, ylim=c(0, max(c(poisdens, geomdens))))
+  colors = rainbow(2)
+  lines(poisdens~ un, col=colors[1], type="b", pch=2)
+  lines(geomdens ~ un, type= "b", col = colors[2], pch=3)
+  
+  legend("topright",legend=c("observado", "poisson", "geom"), col=c("black",colors), lty=rep(1,3), pch=1:3, bty="n")
+}
+
+layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2), byrow = T, ncol=6))
+gethistadj(sample_to_analize[[1]][[1]], main="Ajuste del histograma para t0")
+gethistadj(sample_to_analize[[1]][[2]], main="Ajuste del histograma para t1")
+gethistadj(sample_to_analize[[1]][[3]], main="Ajuste del histograma para t2")
+gethistadj(sample_to_analize[[1]][[4]], main="Ajuste del histograma para t3")
+@
+
+Para la concentración más baja tanto la distribución de Poisson como la geométrica ajustan casi a la perfección los datos para todos los tiempos. \breakline
+
+Observemos el ajuste para la concentración $C_2$:
+
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.5>>=
+layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2), byrow = T, ncol=6))
+gethistadj(sample_to_analize[[2]][[1]], main="Ajuste del histograma para t0")
+gethistadj(sample_to_analize[[2]][[2]], main="Ajuste del histograma para t1")
+gethistadj(sample_to_analize[[2]][[3]], main="Ajuste del histograma para t2")
+gethistadj(sample_to_analize[[2]][[4]], main="Ajuste del histograma para t3")
+@
+
+En este caso ambas distribuciones ajustan bien los datos de nuevo. A pesar de ello, aparentemente el ajuste de la geométrica es un poco mejor. \breakline
+
+Veámoslo para la concentración $C_3$:
+
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.5>>=
+layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2), byrow = T, ncol=6))
+gethistadj(sample_to_analize[[3]][[1]], main="Ajuste del histograma para t0")
+gethistadj(sample_to_analize[[3]][[2]], main="Ajuste del histograma para t1")
+gethistadj(sample_to_analize[[3]][[3]], main="Ajuste del histograma para t2")
+gethistadj(sample_to_analize[[3]][[4]], main="Ajuste del histograma para t3")
+@
+
+De nuevo las distribuciones que mejor ajustan son la de Poisson y geométrica, pasa igual que en la concentración anterior, la geométrica ajusta mejor que la Poisson, sin embargo, conforme aumenta el tiempo el ajuste de ambas empeora. \breakline
+
+A continuación se puede observar el ajuste para la concentración $C_4$:
+
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.5>>=
+layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2), byrow = T, ncol=6))
+gethistadj(sample_to_analize[[4]][[1]], main="Ajuste del histograma para t0")
+gethistadj(sample_to_analize[[4]][[2]], main="Ajuste del histograma para t1")
+gethistadj(sample_to_analize[[4]][[3]], main="Ajuste del histograma para t2")
+gethistadj(sample_to_analize[[4]][[4]], main="Ajuste del histograma para t3")
+@
+
+En este caso, para el tiempo semiinicial el ajuste es mejor por parte de la distribución de Poisson que por la geométrica, aunque conforme avanza el tiempo la geométrica acaba ajustando mejor que la Poisson, a pesar de que el ajuste empeora por parte de ambas distribuciones conforme aumenta el tiempo. \breakline
+
+Finalmente veamos el ajuste para la concentración $C_5$:
+
+<<echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.5>>=
+layout(matrix(c(1,1,1,2,2,2,1,1,1,2,2,2), byrow = T, ncol=6))
+gethistadj(sample_to_analize[[5]][[1]], main="Ajuste del histograma para t0")
+gethistadj(sample_to_analize[[5]][[2]], main="Ajuste del histograma para t1")
+gethistadj(sample_to_analize[[5]][[3]], main="Ajuste del histograma para t2")
+gethistadj(sample_to_analize[[5]][[4]], main="Ajuste del histograma para t3")
+@
+
+Por último, las distribuciones no acaban de ajustar correctamente los datos con concentraciones tan altas de polímeros, además el ajuste continúa empeorando deacuerdo al aumento del tiempo. \breakline
+
+Para finalizar este apartado, y deacuerdo a los gráficos anteriores, el mejor ajuste aparentemente es el de la geométrica. Por ello a partir de ahora trabajaremos suponiendo únicamente que los datos son geométricos. \breakline
+
+Vamos a visualizar la evolución del parámetro $p$ de la geométrica a lo largo del tiempo para cada concentración de polímeros. Para estimarlos se ha utilizado el estimador de máxima verosimilitud del parámetro $p$ de la geométrica.
+
+<<asimpparams, echo=FALSE, fig.align='center', fig.pos="H", fig.asp=0.7, fig.cap="Evolución temporal del parámetro $p$ de la geométrica.">>=
+geomp <- lapply(mostres, function(x){
+  sapply(x, function(y){length(y)/sum(y)})
+})
+
+
+maxs <- sapply(geomp, max)
+mins <- sapply(geomp, min)
+
+ps <- c(0.867753,0.683307,0.558263,0.417172,0.297878)
+color=rainbow(5)
+  for(i in seq_along(geomp)){
+    if(i == 1) plot(geomp[[i]], col=color[i], type="l", ylim=c(min(mins), max(maxs)), ylab="p", xlab="tiempo", xlim=c(0,maxtime), cex=0.5)
+    else{
+      lines(geomp[[i]], col=color[i])
+    }
+    #abline(h=ps[i], lty=2, col=color[i])
+  }
+   legend("topright", paste0("C", 1:5, sep=""), col=color ,lty=rep(1,length(color)), bty="n")
+@
+
+Observamos que con el paso del tiempo, la estimación del parámetro $p$ tiende a estabilizarse para todas las concentraciones de polímeros, sin embargo, cuanto más alta és la concentración más tarda en converger el parámetro. También observamos que la varianza del parámetro crece deacuerdo al aumento de tiempo, sin embargo también aparenta estabilizarse a partir de cierto punto en el tiempo. \breakline
+
+Según el modelo teórico, los valores a los que converge el parámetro $p$ los ha identificado el investigador que diseñó el modelo. Nosotros disponemos de ellos y vamos a investigar, mediante tests de hipótesis, para cada concentración y tiempo cuándo tenemos evidencias estadísticamente significativas de que cualquier muestra sigue una distribución geométrica de parámetro $p_{C_i}$, donde $p_{C_i}$ es el parámetro de la geométrica al que convergen las muestras para cada distribución con el paso del tiempo.
+
+\section{Tests de hipótesis}
+\label{sec:testhip}
+
+La idea de este apartado es verificar para que tiempos y concentraciones de polímeros las muestras simuladas siguen una distribución geométrica de parámetro $p_{C_i}, \ \ \ \forall \ i \in \{ 1,\dots,5 \}$. \breakline
+
+\textsc{\cite{Horn}}

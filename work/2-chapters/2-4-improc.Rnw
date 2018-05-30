@@ -1,0 +1,238 @@
+\chapter{Procesamiento de imagenes digitales}
+\label{chap:improc}
+
+\minitoc
+
+\breakline
+El procesamiento de imágenes es el conjunto de técnicas (algoritmos) que se aplican a las imágenes digitales con el objetivo de mejorar la calidad o facilitar la extracción de información de éstas. \breakline
+
+Como subcategoría del procesamiento de señales digitales, el procesamiento de imágenes digitales tiene muchas ventajas sobre el procesamiento de imágenes analógicas. El procesamiento digital de imágenes permite el uso de algoritmos mucho más complejos y, por lo tanto, puede ofrecer un rendimiento más sofisticado en tareas simples y la implementación de métodos que serían imposibles por medios analógicos, de ésta manera puede evitar problemas como el exceso de ruido en las imágenes o la distorsión de la señal durante el procesamiento. \breakline
+
+Dado que las imágenes digitales se definen, como mínimo, en dos dimensiones, el procesamiento de imágenes digitales se puede modelar en forma de sistemas multidimensionales. \breakline
+
+Las técnicas que se utilizan en el procesamiento de imágenes digitales se pueden dividir en diferentes campos según el uso que tengan éstas, desde técnicas para cambiar las dimensión y proyección de las imágenes, hasta mejoras de calidad visuales e incluso reconocimiento de patrones. \breakline
+
+Algunos de los campos principales en los que se dividen éstas técnicas són los siguientes:
+
+\begin{itemize}
+
+\item Proceso de filtrado: Es el conjunto de técnicas englobadas dentro del preprocesamiento de imágenes cuyo objetivo fundamental es obtener, a partir de una imagen origen, otra final cuyo resultado sea más adecuado para una aplicación específica mejorando ciertas características de la misma que posibilite efectuar operaciones del procesado sobre ella.
+
+\item Proceso de clasificación: El término \textsl{clasificación} se refiere al problema de identificar a cuál de un conjunto de categorías (subpoblaciones) pertenece una nueva observación. En el caso del procesamiento de imágenes éstas técnicas se utilizan para englobar los píxeles de una imagen en diferentes subgrupos. Existen algoritmos matemáticos que siguen metodologías muy distintas para llevar a cabo estos procesos de clasificación.
+
+\item Proceso de extracción de características: És el proceso previo a la clasificación, esencialmente es un método que pretende extraer la información útil (característcas) de una imagen y al mismo tiempo eliminar (en la medida de lo posible) la información redundante que ésta contiene.
+
+\item Proceso de reconocimiento: El proceso de reconocimiento (de patrones) es el conjunto de técnicas cuyo objetivo fundamental es reconocer patrones y formas en una imagen. Se trata de una rama de las técnicas conocidas como \textsl{machine learning} así como las técnicas de classificación, a la cual también pertenece. La diferencia principal entre el proceso de clasificación y el proceso de reconocimiento se basa esencialmente en el aprendizaje que llevan a cabo los algoritmos.
+
+\end{itemize}
+
+\section{Filtrado: Ecualización del histograma}
+\label{sec:eqhist}
+
+La ecualización del histograma es una método que pertence al procesamiento de imágenes, el objetivo de ésta técnica es ajustar las intensidades de los píxeles de una imagen para mejorar el contraste de ésta utilizando su histograma. \breakline
+
+Consideramos $f$ una imagen representada como una matriz de $m_r$ filas por $m_c$ columnas de píxeles con intensidades que asumen valores entre $0$ y $L-1$. $L$ es el numero de posibles valores de intensidad de los píxeles, normalmente $256$. Denotamos $p$ el histograma normalizado de $f$ para cada posible intensidad. De manera que
+
+$$
+p_n = \frac{\text{numero de píxeles con intensidad }n}{\text{numero total de píxeles}} \text{\hspace{1cm}} n = 0,1, \dots, L-1
+$$
+
+\breakline
+La imagen con el histograma ecualizado $g$ se define como
+
+\begin{equation}
+\label{eq:he1}
+g_{i,j} = \text{floor}((L-1)\sum^{f_{i,j}}_{n=0}p_n),
+\end{equation}
+
+\breakline
+donde floor() redondea un numero al entero más cercano por debajo de este. Ésta ecuación es equivalente a transformar las intensidades de los píxeles, $k$, de $f$ por la función
+
+$$
+T(k) = \text{floor}((L-1)\sum^{k}_{n=0}p_n)
+$$
+
+\breakline
+La razón por la cual se aplica ésta transformación surge de pensar en las intesidades de $f$ y $g$ como variables aleatórias contínuas $X$, $Y$ distribuidas en $\left[0, L-1\right]$ con $Y$ definida por
+
+\begin{equation}
+\label{eq:he2}
+Y=T(X)=(L-1)\int_0^Xp_{_X}(x)dx,
+\end{equation}
+
+\breakline
+donde $p_{_X}$ es la función de densidad de probabilidad de $f$. $T$ es la función de distribución acumulada de $X$ multiplicada por $(L-1)$. Supongamos por simplicidad que $T$ es diferenciable e invertible. Se puede demostrar que $Y$ definida por $T(X)$ es uniformemente distribuida en $\left[0,L-1\right]$ es decir, que $p_{_Y}(y) = \frac{1}{L-1}$.
+
+$$
+\int^y_0p_{_Y}(z)dz = P(0 \leq Y \leq y) = P(0 \leq X \leq T^{-1}(y)) = \int_0^{T^{-1}(y)}p_{_X}(w)dw
+$$
+$$
+\frac{d}{dy}\left( \int^y_0 p_{_Y}(z)dz\right) = p_{_Y}(y)= p_{_X}(T^{-1}(y))\frac{d}{dy}\left( T^{-1}(y)\right).
+$$
+
+\breakline
+Teniendo en cuenta que $\frac{d}{dy}T\left(T^{-1}(y)\right) = \frac{d}{dy}y = 1$, entonces
+$$
+\frac{dT}{dx}|_{x=T^{-1}(y)}\frac{d}{dy}T^{-1}(y) = (L-1)p_{_X}(T^{-1}(y))\frac{d}{dy}(T^{-1}(y))=1
+$$
+
+\breakline
+lo que significa que $p_{_Y}(y) = \frac{1}{L-1}$.\breakline
+
+Nuestro histograma discreto es una aproximación de $p_{_X}(x)$ y la transformación en la \autoref{eq:he1} se aproxima a la de la \autoref{eq:he2}. Mientras que la versión discreta no dará como resultado histogramas exactamente planos, los aplanará y como resultado mejorará el contraste en la imagen. \breakline
+
+El resultado de aplicar la \autoref{eq:he1} a una de las imágenes con las que hemos trabajado se puede observar en la \autoref{fig:he} a continuación:
+
+<<he, fig.asp=0.7, fig.width=8, fig.align='center', fig.pos='htbp', fig.cap="Ejemplificación de la aplicación del ecualizador del histograma.",echo=FALSE>>=
+
+image <- readImage( images[6] )
+eqimage <- loadEqImage( images[6] )[[1]]
+
+mat <- matrix(c(5,5,2,2,1,1,2,2,1,1,2,2,7,7,2,2,6,6,4,4,3,3,4,4,3,3,4,4,8,8,4,4), ncol=4, byrow=T)
+layout(mat)
+
+plot(image, cex=0.6)
+mtext("Imagen original", line=5)
+hist(imageData(image)*256, freq=FALSE, breaks=256, main = "Histograma original", xlab=NULL,ylab=NULL)
+plot(eqimage, cex=0.6)
+mtext("Imagen transformada", line=5)
+hist(imageData(eqimage)*256, freq=FALSE, breaks=256, main="Histograma transformado", xlab=NULL, ylab=NULL)
+@
+
+
+\section{Clasificación: Umbral de Otsu}
+\label{sec:classification}
+
+En el procesamiento de imágenes el método de Otsu, llamado así por Noboyuki Otsu, se usa para encontrar automáticamente un umbral de clasificación en imágenes basado en métodos de clústeres, o la reducción de una imagen represesntada en escala de grises a una imagen binaria. El algoritmo asume que la imagen tiene dos clases de píxeles siguiendo un histograma bimodal (píxeles en primer plano y píxeles de fondo), luego calcula el umbral óptimo que separa las dos clases de píxeles para que su dispersión combinada (varianza intraclase) sea mínima o equivalente, de modo que la varianza entre clases es máxima. En consecuencia el método de Otsu es aproximadamente un análogo discreto unidimensional del análisis discriminante de Fisher. El método de Otsu también está directamente relacionado con el método de optimización de Jenks.
+
+
+\subsection{El método}
+\breakline
+Como se ha mencionado anteriormente, en el método de Otsu, buscamos exhaustivamente el umbral que minimiza la varianza intraclase, definida como una suma ponderada de varianzas de las dos clases, como se muestra en la ecuación a continuación:
+
+\begin{equation}
+\label{eq:otsu1}
+\sigma^2_w(t) = w_0(t)\sigma^2_0(t) + w_1(t)\sigma^2_1(t)
+\end{equation}
+
+donde los pesos $w_0$ y $w_1$ son las probabilidades de las dos clases separadas por un umbral $t$, y $\sigma^2_0$ y $\sigma^2_1$ son las varianzas de esas dos clases.
+
+\breakline
+La probabilidad de la clase $w_{0,1}(t)$ se calcula a partir de los $L$ valores del histograma en los que se reparten las intensidades de los píxeles:
+
+$$ w_0(t) = \sum_{i=0}^{t-1}p(i)$$
+\breakline
+$$w_1(t) = \sum_{i=t}^{L-1}p(i)$$
+\breakline
+
+Otsu muestra que minimizar la varianza intraclase es equivalente a maximizar la varianza entre clases:
+
+$$
+\sigma^2_b(t) = \sigma^2 - \sigma^2_w(t) = w_0(\mu_0 -\mu_T)^2 + w_1(\mu_1 - \mu_T)^2= w_0(t)w_1(t)\left[\mu_0(t) - \mu_1(t)\right]^2
+$$
+\breakline
+Que se expresa en términos de las probabilidades de clase $w$ y las medias de clase $\mu$.
+\breakline
+Donde la media de clase $\mu_{0,1,T}(t)$ es
+
+$$\mu_0(t) = \sum_{i=0}^{t-1}i\frac{p(i)}{w_0}$$
+\breakline
+$$\mu_1(t) = \sum_{i=t}^{L-1}i\frac{p(i)}{w_1}$$
+\breakline
+$$\mu_T = \sum_{i=0}^{L-1}ip(i)$$
+\breakline
+
+Finalmente, las siguientes relaciones se pueden verificar fácilmente:
+$$ w_0\mu_0 + w_1\mu_1 = \mu_T$$
+$$ w_0 + w_1 = 1$$
+\breakline
+Tanto las probabilidades como los promedios de cada clase se pueden calcular iterativamente, esta idea produce un algoritmo efectivo.
+
+\subsection{Limitaciones}
+
+El método de Otsu exhibe un rendimiento relativamente bueno si se puede suponer que el histograma tiene una distribución bimodal y se supone que se aprecia un valle profundo y agudo entre dos picos. Pero si el área del objeto es pequeña en relación con el área del fondo de la imagen, no se puede suponer que el histograma muestre bimodalidad. Y si las varianzas del objeto y las intensidades de fondo son grandes en comparación con la diferencia de medias, o la imagen está severamente corrompida por ruido aditivo, el valle profundo y agudo que debería presentar el histograma de las intensidades de los píxeles se degrada. 
+\breakline
+Si nos encontramos en esta situación, el umbral, posiblemente incorrecto, determinado por el método de Otsu da como resultado un error de segmentación.
+
+\breakline
+En resumen, a partir de los resultados experimentales, las técnicas globales de umbralización, incluido el método de Otsu, se ven limitadas principalmente por los siguientes factores:
+
+\begin{itemize}
+\item Pequeño tamaño del objeto (en relación al área de la imagen completa).
+\item Pequeña diferencia de medias entre clases.
+\item Grandes varianzas del objeto e intensidades de fondo.
+\item Grandes cantidades de ruido.
+\end{itemize}
+
+\subsection{La mejora}
+
+Existen muchas mejoras para el método de Otsu que se centran en diferentes limitaciones que este presenta. Una de estas mejoras bastante conocida y efectiva es el método bidimensional de Otsu. En este enfoque, se estudia la intensidad de cada píxel, así como el valor promedio de la intensidad que presenta su vecindad inmediata, de modo que los resultados de la binarización mejoran mucho, especialmente para aquellas imágenes dañadas por el ruido.\breakline
+
+Para cada píxel, se calcula el promedio de las intensidades que presentan los píxeles vecinos. Continuando con la notación anterior, $L$ es el numero de intensidades que contiene la escala de grises que puede tomar un píxel, sin embargo, el promedio de una série de píxeles también puede tomar $L$ valores distintos, debido a la naturaleza del promedio. Entonces se forma una pareja con el píxel en cuestión y el promedio de su vecindad. Cada pareja existente pertenece a un contenedor bidimensional. Por lo tanto, el numero total de contenedores es $L \times L$. El numero total de ocurrencia (frecuencia), $f_{i,j}$, de una pareja $(i,j)$ dividido por el numero total de píxeles en la imagen $N$, define la función de masa de probabilidad conjunta en el histograma bidimensional:
+
+\begin{equation}
+\label{eq:otsu2}
+P_{i,j} = \frac{f_{i,j}}{N}, \text{\hspace{1cm}} \sum_{i=0}^{L-1}\sum_{j=0}^{L-1}P_{i,j} = 1
+\end{equation}
+
+\breakline
+Y el método bidimensional de Otsu se desarrollará en base al histograma bidimensional de la siguiente manera.
+\breakline
+Las probabilidades de las dos clases o clústeres pueden ser denotadas como:
+$$ w_0=\sum_{i=0}^{s-1}\sum_{j=0}^{t-1}P_{i,j} $$
+
+$$ w_1=\sum_{i=s}^{L-1}\sum_{j=t}^{L-1}P_{i,j} $$
+\breakline
+
+El vector del promedio de intensidades de las dos clases o clústeres puede ser expresado de la siguiente forma:
+$$ 
+\mu_0 = \left[\mu_{0i},\mu_{0j}\right]^t = 
+\left[ \sum_{i=0}^{s-1}\sum_{j=0}^{t-1}i\frac{P_{i,j}}{w_0}, \sum_{i=0}^{s-1}\sum_{j=0}^{t-1}j\frac{P_{i,j}}{w_0}\right]^t
+$$
+$$ 
+\mu_1 = \left[\mu_{1i},\mu_{1j}\right]^t = 
+\left[ \sum_{i=s}^{L-1}\sum_{j=t}^{L-1}i\frac{P_{i,j}}{w_1}, \sum_{i=s}^{L-1}\sum_{j=t}^{L-1}j\frac{P_{i,j}}{w_1}\right]^t
+$$
+$$
+\mu_T = \left[\mu_{Ti},\mu_{Tj}\right]^t = 
+\left[ \sum_{i=0}^{L-1}\sum_{j=0}^{L-1}iP_{i,j}, \sum_{i=s}^{L-1}\sum_{j=t}^{L-1}jP_{i,j}\right]^t
+$$
+\breakline
+
+En la mayoría de los casos la probabilidad de la diagonal será negligible, por lo tanto es fácil verificar que
+$$ w_0 + w_1 \cong 1$$
+$$ w_0\mu_0 + w_1\mu_1 \cong \mu_T $$
+
+\breakline
+
+La matriz discreta de inter clase se define como
+$$
+S_b = \sum_{k=0}^1w_k\left[ (\mu_k - \mu_T)(mu_k - \mu_T)^t\right]
+$$
+\breakline
+La traza de la matriz discreta puede ser expresada de la siguiente forma
+$$
+tr(S_b) = w_0\left[ (\mu_{0i} - \mu_{Ti})^2 + (\mu_{0j} - \mu_{Tj})^2\right] + w_1\left[ (\mu_{1i} - \mu_{Ti})^2 + (\mu_{1j} - \mu_{Tj})^2\right]
+$$
+$$
+tr(S_b) = \frac{(\mu_{Ti}w_0-\mu_i)^2 + (\mu_{Tj}w_0 - \mu_j)^2}{w_0(1-w_0)}
+$$
+\breakline
+
+donde 
+$$ \mu_i = \sum_{i=0}^{s-1}\sum_{j=0}^{t-1}iP_{ij} $$
+$$ \mu_j = \sum_{i=0}^{s-1}\sum_{j=0}^{t-1}jP_{ij} $$
+
+\breakline
+
+De manera similar al método unidimensional de Otsu, el umbral óptimo $(s,t)$ se obtiene maximizando $tr(S_b)$.
+
+\subsection{Resultados}
+
+En nuestro caso utilizamos este método para clasificar los píxeles de cada una de nuestras imágenes en dos clases distintas. \\
+La finalidad que tenemos es diferenciar los píxeles que pertenecen al plasma de los píxeles que pertenecen a los contornos y membranas celulares de los globulos rojos que aparecen en las imágenes microscópicas de las gotas de sangre. \breakline
+
+Se debe remarcar que se ha aplicado este método después de haber mejorado el contraste de las imágenes utilizando la ecualización del histograma de estas, como se ha explicado en la \autoref{sec:eqhist} de este mismo apartado.
+
+
+

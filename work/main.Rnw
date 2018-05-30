@@ -44,12 +44,17 @@
 <<preamble, child='2-chapters/2-1-preamble.Rnw'>>=
 @
 
-<<design, child='2-chapters/2-2-design.Rnw'>>=
+<<theoretical, child='2-chapters/2-2-theoretical.Rnw'>>=
 @
 
+<<design, child='2-chapters/2-3-design.Rnw'>>=
+@
 
-\bibliography{bib.bib}
+<<improc, child='2-chapters/2-4-improc.Rnw'>>=
+@
 
+<<biblio, child='2-chapters/2-5-biblio.Rnw'>>=
+@
 
 
 \end{document}

@@ -1,0 +1,10 @@
+\clearpage
+\addcontentsline{toc}{chapter}{Bibliografía}
+\begin{thebibliography}{a}
+
+\bibitem[Horn]{Horn} \textsc{S.K. Horn}, 
+\textit{Goodness-of-Fit Tests for Discrete Data: A Review and an Application to a Health Impairment Scale.} 
+Vol. 33, No. 1 Biometrics (Mar., 1977), pp. 237-247.
+
+
+\end{thebibliography}

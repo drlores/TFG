@@ -1,65 +1,62 @@
 
 % working directories
 <<wd, echo =FALSE>>=
-image.dir <- paste(getwd(), "../photos/Microscopio INC", sep="/")
+image.dir <- paste(getwd(), "../../photos/sample0", sep="/")
 #image.dir <- paste(working.dir, "photos/ExploratorySubSample", sep="/")
 @
 
 
 
-<< echo=FALSE, eval=FALSE>>=
+
+<< echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE>>=
 library(EBImage)
 
 images <- list.files(image.dir, full.names = T)
 
-
 loadEqImage <- function( images ){
-  ims <- readImage( images )
-  ims <- channel(ims, mode = 'luminance')
-  imsc <- ims[,131:960,]
-  imsc <- equalize(imsc, range = 0:1, levels = 256)
-  return(imsc)
+  ims <- lapply(images, readImage)
+  ims <- lapply(ims, function(x) channel(x, mode = 'luminance'))
+  eqims <- lapply(ims, function(x) equalize(x, range = 0:1, levels = 2^8))
+  return(eqims)
 }
 
-
-imgobj <- loadEqImage( images )
+clustering0 <- function( simgobj ){
+  data <- imageData( simgobj )
+  v <- do.call(c, lapply(1:nrow(data), function(x) data[x,]))
+  newdata <- matrix(kmeans(v, 3)$cluster, byrow=T, nrow=nrow(data))
+  newimg <- as.Image(newdata)
+}
 
 clustering1 <- function( imgobj ){
-  threshold <- otsu( imgobj )
-  ims_th <- combine( mapply(function(frame, th) frame > th,
-                            getFrames( imgobj ), threshold, SIMPLIFY = FALSE))
-
-  imst <- fillHull(ims_th)
-  imst <- max(imst) - imst
-  return(bwlabel(imst))
+  threshold <- sapply(imgobj, otsu)
+  ims_th <- mapply(function(frame, th) frame > th,
+                    imgobj, threshold, SIMPLIFY = FALSE)
+  imst <- lapply(ims_th, fillHull)
+  imst <- lapply(imst, function(x) max(x) - x )
+  return(lapply(imst, bwlabel))
 }
 
+getDistances <- function( clusterim ){
+  mapply(function(x) as.Image(distmap(x)/max(distmap(x))), lapply(clusterim, imageData), SIMPLIFY = FALSE)
+}
 
-distances <- combine(mapply(function(x) distmap(x)/max(distmap(x)), getFrames(clustering1(imgobj)), SIMPLIFY = FALSE))
-
-
-segmentation <- function( cmask, imgobj ){
-  mask <- watershed( distmap(cmask), tolerance = 3)
-  imgseg <- propagate(seeds = mask, x=(max(imgobj) - imgobj), mask = cmask)
-  return(imgseg)
+segmentation <- function( scmask, simgobj , sdist){
+  mask <- watershed( sdist , tolerance = 3*mean(imageData(sdist)))
+  simgseg <- propagate(seeds = mask, x=simgobj, mask = scmask)
+  return(simgseg)
 }
 
 getData <- function( imgseg ){
-  list.images <- getFrames(imgseg)
-  data <- do.call(rbind, lapply( list.images, function(x){
+  data <- do.call(rbind, mapply(function(x,z){
     x <- imageData(x)
     v <-  c(matrix(x, nrow=1, byrow = T))
     groups <- unique(v)
     counts <- sapply(groups, function(y) sum(v==y))
-    return(cbind(groups, counts))
-  }))
-  s0 <- which(data[,1] == 0)
-  s1 <- c(s0[-1], nrow(data)+1)
-  i = 1:20
-  im <- do.call(c,mapply(function(x,y,i) rep(i, y-x), s0, s1, i))
-  data <- data.frame("image"= im, "cluster" = data[,1], "area" = data[,2])
+    image <- rep(z, length(counts))
+    return(cbind(image, groups, counts))
+  }, imgseg, 1:length(imgseg)))
+  return(data)
 }
-
 @
 
 
